@@ -1,0 +1,5 @@
+{
+  "name": "KisanSahayak AI – Intelligent Farmer Support System",
+  "description": "Production-grade, AI-powered agricultural assistant for crop recommendation, yield prediction, and diagnostic support.",
+  "requestFramePermissions": ["camera", "geolocation"]
+}

@@ -1,0 +1,68 @@
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Collection: queries
+// Fields:
+//   - userId: string (required) - UID of the farmer
+//   - timestamp: timestamp (required) - When the query was made
+//   - type: string (required, enum: ['diagnosis', 'question'])
+//   - queryText: string (optional) - Question or STT result
+//   - imageUrl: string (optional) - Image URL
+//   - cropName: string (optional)
+//   - condition: string (optional)
+//   - severity: string (optional, enum: ['Low', 'Medium', 'High'])
+//   - explanation: string (optional)
+//   - actionPlan: list (optional) - Array of strings
+//   - location: map (optional) - {latitude: number, longitude: number}
+//
+// Collection: market_prices
+// Fields:
+//   - crop: string (required)
+//   - price: string (required)
+//   - unit: string (required)
+//   - location: string (required)
+//   - timestamp: timestamp (required)
+//
+// ===============================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isDocOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.userId;
+    }
+
+    function isValidQuery(data) {
+      return data.userId is string &&
+             data.type in ['diagnosis', 'question'] &&
+             (!('queryText' in data) || data.queryText is string) &&
+             (!('severity' in data) || data.severity in ['Low', 'Medium', 'High']);
+    }
+
+    match /queries/{queryId} {
+      allow read: if isDocOwner();
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid && isValidQuery(request.resource.data);
+      allow update, delete: if isDocOwner();
+    }
+
+    match /market_prices/{priceId} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Only admin/system can write market prices
+    }
+    
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+  }
+}

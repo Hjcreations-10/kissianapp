@@ -1,0 +1,52 @@
+{
+  "entities": {
+    "Query": {
+      "title": "Farmer Query",
+      "description": "A question or diagnosis request from a farmer.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "The UID of the farmer." },
+        "timestamp": { "type": "string", "format": "date-time", "description": "When the query was made." },
+        "type": { "type": "string", "enum": ["diagnosis", "question"], "description": "Whether it was an image diagnosis or a text question." },
+        "queryText": { "type": "string", "description": "The text of the question or speech-to-text result." },
+        "imageUrl": { "type": "string", "description": "URL of the uploaded image (if any)." },
+        "cropName": { "type": "string", "description": "Identified crop name." },
+        "condition": { "type": "string", "description": "Identified condition." },
+        "severity": { "type": "string", "enum": ["Low", "Medium", "High"] },
+        "explanation": { "type": "string", "description": "The expert explanation." },
+        "actionPlan": { "type": "array", "items": { "type": "string" }, "description": "The 1-2-3 action plan." },
+        "location": {
+          "type": "object",
+          "properties": {
+            "latitude": { "type": "number" },
+            "longitude": { "type": "number" }
+          }
+        }
+      },
+      "required": ["userId", "timestamp", "type"]
+    },
+    "MarketPrice": {
+      "title": "Market Price",
+      "description": "Daily market prices for crops.",
+      "type": "object",
+      "properties": {
+        "crop": { "type": "string" },
+        "price": { "type": "string" },
+        "unit": { "type": "string" },
+        "location": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["crop", "price", "unit", "location", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/queries/{queryId}": {
+      "schema": "Query",
+      "description": "Collection of farmer queries and diagnoses."
+    },
+    "/market_prices/{priceId}": {
+      "schema": "MarketPrice",
+      "description": "Collection of daily market price data."
+    }
+  }
+}
